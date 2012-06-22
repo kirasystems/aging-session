@@ -29,7 +29,7 @@ time the session is written and erases entries after 1 hour.
 (def app
   (wrap-session handler {:store (aging-memory-store 
 	                                :refresh-on-write true
-								                  :events           [(event/expires-after 3600)])}))
+                                        :events           [(event/expires-after 3600)])}))
 ```
 
 Event functions take two parameters: the current timestamp and a session entry
