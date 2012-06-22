@@ -14,6 +14,12 @@ This session store has a sweeper thread that will apply a set of functions
 to every session object after every X requests are made. These functions
 are also applied to every session when it is read.
 
+## Dependency
+
+To use aging-session, include the following dependency in your project.clj file.
+
+    [aging-session "0.2.0"]
+
 ## Usage
 
 The following creates a memory aging store that refreshes the timestamp every
