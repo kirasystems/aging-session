@@ -41,9 +41,9 @@ expires after function illustrates this.
 ```clojure
 (defn expires-after
   "Expires an entry if left untouched for a given number of seconds."
-	[seconds]
+  [seconds]
   (let [ms (* 1000 seconds)]
-	  (fn [now entry] (if-not (> (- now (:timestamp entry)) ms) entry))))
+    (fn [now entry] (if-not (> (- now (:timestamp entry)) ms) entry))))
 ```
 
 Event functions are applied in order and can be used to modify sessions in
