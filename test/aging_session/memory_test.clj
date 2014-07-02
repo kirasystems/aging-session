@@ -34,7 +34,7 @@
         (is (= ts1 (read-timestamp as "mykey")))
         (is (= (read-session as "mykey") {:foo 2}))))))
 
-(deftest timestamp-on-creation
+(deftest timestamp-on-write
   (testing "Test the behaviour where each entry's timestamp is refreshed on write."
     (let [as (aging-memory-store :refresh-on-write true)]
       (write-session as "mykey" {:foo 1})
@@ -43,3 +43,13 @@
         (write-session as "mykey" {:foo 2})
         (is (not (= ts1 (read-timestamp as "mykey"))))
         (is (= (read-session as "mykey") {:foo 2}))))))
+
+(deftest timestamp-on-read
+  (testing "Test the behaviour where each entry's timestamp is refreshed on read."
+    (let [as (aging-memory-store :refresh-on-read true)]
+      (write-session as "mykey" {:foo 1})
+      (let [ts1 (read-timestamp as "mykey")]
+        (. Thread (sleep 10))
+        (is (= (read-session as "mykey") {:foo 1}))
+        (is (not (= ts1 (read-timestamp as "mykey"))))
+        (is (= (read-session as "mykey") {:foo 1}))))))

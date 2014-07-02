@@ -47,7 +47,7 @@
   (read-timestamp [store key]
                   "Read a session from the store and return its timestamp. If no key exists, returns nil."))
 
-(defrecord MemoryAgingStore [session-map req-touch req-count req-limit event-fns]
+(defrecord MemoryAgingStore [session-map refresh-on-write refresh-on-read req-count req-limit event-fns]
   AgingStore
   (read-timestamp [_ key]
     (get-in @session-map [key :timestamp]))
@@ -55,12 +55,14 @@
   SessionStore
   (read-session [_ key]
     (swap! session-map sweep-entry event-fns key)
+    (when refresh-on-read
+      (swap! session-map assoc-in [key :timestamp] now))
     (get-in @session-map [key :value] {}))
 
   (write-session [_ key data]
     (let [key (or key (str (UUID/randomUUID)))]
       (swap! req-count inc)	  ; Increase the request count
-      (if req-touch           ; Write key and and update timestamp.
+      (if refresh-on-write    ; Write key and and update timestamp.
         (swap! session-map assoc key (new-entry data))
         (swap! session-map write-entry key data))
       key))
@@ -87,14 +89,15 @@
 (defn aging-memory-store
   "Creates an in-memory session storage engine."
   [& opts]
-  (let [{:keys [session-atom refresh-on-write sweep-every sweep-delay events]
+  (let [{:keys [session-atom refresh-on-write refresh-on-read sweep-every sweep-delay events]
          :or   {session-atom     (atom {})
                 refresh-on-write false
+                refresh-on-read  false
                 sweep-every      200
                 sweep-delay      30000
                 events           []}} opts
         counter-atom (atom 0)
-        store        (MemoryAgingStore. session-atom refresh-on-write counter-atom sweep-every events)]
+        store        (MemoryAgingStore. session-atom refresh-on-write refresh-on-read counter-atom sweep-every events)]
     (in-thread #(sweeper-thread store sweep-delay))
     store))
 

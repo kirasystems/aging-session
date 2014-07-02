@@ -1,4 +1,4 @@
-(defproject aging-session "0.2.1"
+(defproject aging-session "0.3.0"
   :description "Memory based ring session with expiry and time based mutation."
   :url "https://github.com/diligenceengine/aging-session"
   :license {:name "Eclipse Public License"
