@@ -35,3 +35,14 @@
       (write-session as "other-key" {:foo 1})
       (. Thread (sleep 2000))
       (is (nil? (read-timestamp as "mykey"))))))
+
+(deftest refresh-on-read-nonexistant-key-then-sweep
+  (testing "Test an empty session read (with refresh-on-read enabled) then check that the expiry sweep still works"
+    (let [as (aging-memory-store
+               :events [(event/expires-after 1)]
+               :refresh-on-read true
+               :sweep-every 1
+               :sweep-delay 1000)]
+      (is (= (read-session as "foo") {}))
+      ; read again to trigger the sweep
+      (is (= (read-session as "foo") {})))))
