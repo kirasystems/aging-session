@@ -18,7 +18,7 @@ are also applied to every session when it is read.
 
 To use aging-session, include the following dependency in your project.clj file.
 
-    [aging-session "0.2.0"]
+    [aging-session "0.3.1"]
 
 ## Usage
 
