@@ -1,4 +1,6 @@
 # aging-session
+[![Build Status](https://travis-ci.org/kirasystems/aging-session.svg?branch=master)](https://travis-ci.org/kirasystems/aging-session)
+[![Dependencies Status](https://jarkeeper.com/kirasystems/aging-session/status.svg)](https://jarkeeper.com/kirasystems/aging-session)
 
 A memory based ring session store that has a concept of time. The primary goal
 is to allow the session store to deallocate old sessions. While much of this
@@ -18,7 +20,7 @@ are also applied to every session when it is read.
 
 To use aging-session, include the following dependency in your project.clj file.
 
-    [aging-session "0.3.1"]
+[![Clojars Project](http://clojars.org/kirasystems/aging-session/latest-version.svg)](http://clojars.org/kirasystems/aging-session)
 
 ## Usage
 
@@ -59,6 +61,6 @@ in sessions older than 1 hour, and delete sessions older than 2 hours.
 
 ## License
 
-Copyright © 2012 DiligenceEngine Inc.
+Copyright © 2012-2016 DiligenceEngine Inc.
 
 Distributed under the Eclipse Public License, the same as Clojure.
