@@ -1,4 +1,4 @@
-(defproject kirasystems/aging-session "0.3.3-SNAPSHOT"
+(defproject kirasystems/aging-session "0.3.3"
   :description "Memory based ring session with expiry and time based mutation."
   :url "https://github.com/diligenceengine/aging-session"
   :license {:name "Eclipse Public License"
@@ -9,8 +9,8 @@
                               :username :env
                               :password :env}]]
 
-  :dependencies [[ring/ring-core "1.4.0"]]
-  :profiles {:dev {:dependencies [[org.clojure/clojure "1.7.0"]]}}
+  :dependencies [[ring/ring-core "1.7.1"]]
+  :profiles {:dev {:dependencies [[org.clojure/clojure "1.9.0"]]}}
 
   :release-tasks [["vcs" "assert-committed"]
                   ["change" "version" "leiningen.release/bump-version" "release"]
