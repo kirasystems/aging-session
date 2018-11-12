@@ -61,6 +61,6 @@ in sessions older than 1 hour, and delete sessions older than 2 hours.
 
 ## License
 
-Copyright © 2012-2016 DiligenceEngine Inc.
+Copyright © 2012-2018 Kira Inc.
 
 Distributed under the Eclipse Public License, the same as Clojure.

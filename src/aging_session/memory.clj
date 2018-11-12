@@ -59,12 +59,15 @@
       (swap! session-map assoc-in [key :timestamp] (now)))
     (get-in @session-map [key :value] {}))
 
-  (write-session [_ key data]
-    (let [key (or key (str (UUID/randomUUID)))]
+  (write-session [_ key {:keys [bump-session?] :as data}]
+    (let [key (or key (str (UUID/randomUUID)))
+          session (cond-> data
+                    bump-session? (assoc :last-access (System/currentTimeMillis))
+                    true (dissoc :bump-session?))]
       (swap! req-count inc)	  ; Increase the request count
       (if refresh-on-write    ; Write key and and update timestamp.
-        (swap! session-map assoc key (new-entry data))
-        (swap! session-map write-entry key data))
+        (swap! session-map assoc key (new-entry session))
+        (swap! session-map write-entry key session))
       key))
 
   (delete-session [_ key]
