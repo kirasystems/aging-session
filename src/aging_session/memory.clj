@@ -1,6 +1,9 @@
 (ns aging-session.memory
   "In-memory session storage with mortality."
-  (:require [ring.middleware.session.store :refer :all])
+  (:require [ring.middleware.session.store :refer :all]
+            [de.web.middleware.sente :refer [disconnect-all!]]
+            [de.web.session.local.core :as session]
+            [de.web.session.modify-user-session :refer :all])
   (:import java.util.UUID))
 
 (defrecord SessionEntry [timestamp value])
@@ -72,7 +75,14 @@
 
   (delete-session [_ key]
     (swap! session-map dissoc key)
-    nil))
+    nil)
+
+  ModifyUserSession
+  (kill-user-session [_ user-id]
+    (let [sente-client-ids (session/get-sente-client-ids user-id)
+          session-id       (session/get-session-id user-id)]
+      (disconnect-all! sente-client-ids :kicked)
+      (session/delete-session! session-id)))
 
 (defn sweeper-thread
   "Sweeper thread that watches the session and cleans it."
