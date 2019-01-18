@@ -1,11 +1,18 @@
 (ns aging-session.modify-user-session)
 
-(defprotocol ModifyUserSession
-  "A protocol for modifying the session(s) of a user who is not currently logged in and
-   controlling the application."
+(defprotocol SessionLookup
+  "A protocol for looking up the session details of a user based on their data in an application."
 
-  (terminate-user-session
-    [store x]
-    [store x y]
-    "Arity-2 or 3 methods which receive the arguments: session-store and one or two unique ids to identify the user whose
-    session needs to be terminated."))
+  (session-details
+    [store user-data]
+    "Accepts a session-store and data which would identify the user whose session details will be
+     retreived."))
+
+(defprotocol ModifyUserSession
+  "A protocol for modifying the session(s) of a user that is not actively controlling the application.
+   For example, if an administrator wants to disable/delete a user account, they will be able to terminate
+   all existing user sessions."
+
+  (terminate-user-sessions
+    [store keys]
+    "Accepts a session-store and multiple keys (session-ids) to terminate the user session(s)."))
