@@ -1,7 +1,6 @@
 (ns aging-session.memory
   "In-memory session storage with mortality."
-  (:require [ring.middleware.session.store :refer :all]
-            [aging-session.modify-user-session :refer :all])
+  (:require [ring.middleware.session.store :refer :all])
   (:import java.util.UUID))
 
 (defrecord SessionEntry [timestamp value])
