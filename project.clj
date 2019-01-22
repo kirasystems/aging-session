@@ -1,4 +1,4 @@
-(defproject kirasystems/aging-session "0.3.4"
+(defproject kirasystems/aging-session "0.3.5-SNAPSHOT"
   :description "Memory based ring session with expiry and time based mutation."
   :url "https://github.com/diligenceengine/aging-session"
   :license {:name "Eclipse Public License"
