@@ -14,5 +14,6 @@
    all existing user sessions."
 
   (terminate-user-sessions
-    [store keys]
-    "Accepts a session-store and multiple keys (session-ids) to terminate the user session(s)."))
+    [store keys reason]
+    "Accepts a session-store, multiple keys (session-ids) to terminate the user session(s) and a reason for why
+     the session was terminated."))
