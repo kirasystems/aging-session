@@ -5,51 +5,67 @@
     [aging-session.memory :refer :all]))
 
 (deftest basic-read-empty
-  (testing "Test session reads."
-    (let [as (aging-memory-store)]
-      (is (= (read-session as "mykey") {})))))
+  (let [as (aging-memory-store)
+        cookie (write-session as "invalid-key" {:some :thing})]
+    (testing "Invalid session is empty."
+      (is (= (read-session as "invalid-cookie") {})))
+    (testing "Session with corrupt IV is empty"
+      (is (= (read-session as (str "badpre" (subs cookie 6))) {})))
+    (testing "Session with corrupt MAC is empty"
+      )))
 
 (deftest basic-write
   (testing "Test session writes and reads."
-    (let [as (aging-memory-store)]
-      (write-session as "mykey" {:a 1})
-      (is (= (read-session as "mykey") {:a 1}))
-      (write-session as "mykey" {:a 2})
-      (is (= (read-session as "mykey") {:a 2})))))
+    (let [as (aging-memory-store)
+          cookie (write-session as "invalid-key" {:a 1})]
+      (is (= (read-session as cookie) {:a 1}))
+      (write-session as cookie {:a 2})
+      (is (= (read-session as cookie) {:a 2})))))
 
 (deftest basic-delete
   (testing "Test session delete."
-    (let [as (aging-memory-store)]
-      (write-session as "mykey" {:a 1})
-      (delete-session as "mykey")
-      (is (= (read-session as "mykey") {})))))
+    (let [as (aging-memory-store)
+          cookie (write-session as "invalid-key" {:a 1})]
+      (is (= 1 (:a (read-session as cookie))))
+      (delete-session as (:id (verify-and-decrypt-cookie cookie)))
+      (is (= (read-session as cookie) {})))))
 
 (deftest timestamp-on-creation
   (testing "Test the behaviour where each entry's timestamp is set only on session creation."
-    (let [as (aging-memory-store)]
-      (write-session as "mykey" {:foo 1})
-      (let [ts1 (read-timestamp as "mykey")]
+    (let [as (aging-memory-store)
+          cookie (write-session as "invalid-key" {:a 1})
+          id (:id (verify-and-decrypt-cookie cookie))]
+      (let [ts1 (read-timestamp as id)]
         (is (integer? ts1))
-        (write-session as "mykey" {:foo 2})
-        (is (= ts1 (read-timestamp as "mykey")))
-        (is (= (read-session as "mykey") {:foo 2}))))))
+        (write-session as cookie {:foo 2})
+        (is (= ts1 (read-timestamp as id)))
+        (is (= (read-session as cookie) {:foo 2}))))))
 
 (deftest timestamp-on-write
   (testing "Test the behaviour where each entry's timestamp is refreshed on write."
-    (let [as (aging-memory-store :refresh-on-write true)]
-      (write-session as "mykey" {:foo 1})
-      (let [ts1 (read-timestamp as "mykey")]
+    (let [as (aging-memory-store :refresh-on-write true)
+          cookie (write-session as "invalid-key" {:a 1})
+          id (:id (verify-and-decrypt-cookie cookie))]
+      (let [ts1 (read-timestamp as id)]
         (. Thread (sleep 10))
-        (write-session as "mykey" {:foo 2})
-        (is (not (= ts1 (read-timestamp as "mykey"))))
-        (is (= (read-session as "mykey") {:foo 2}))))))
+        (write-session as cookie {:foo 2})
+        (is (not (= ts1 (read-timestamp as id))))
+        (is (= (read-session as cookie) {:foo 2}))))))
 
 (deftest timestamp-on-read
   (testing "Test the behaviour where each entry's timestamp is refreshed on read."
-    (let [as (aging-memory-store :refresh-on-read true)]
-      (write-session as "mykey" {:foo 1})
-      (let [ts1 (read-timestamp as "mykey")]
+    (let [as (aging-memory-store :refresh-on-read true)
+          cookie (write-session as "invalid-key" {:a 1})
+          id (:id (verify-and-decrypt-cookie cookie))]
+      (let [ts1 (read-timestamp as id)]
         (. Thread (sleep 10))
-        (is (= (read-session as "mykey") {:foo 1}))
-        (is (not (= ts1 (read-timestamp as "mykey"))))
-        (is (= (read-session as "mykey") {:foo 1}))))))
+        (is (= (read-session as cookie) {:a 1}))
+        (is (not (= ts1 (read-timestamp as id))))
+        (is (= (read-session as cookie) {:a 1}))))))
+
+(deftest crypto-basic-functionality
+  (testing "can create keys"
+    (is (= 2 (count (get-crypto-keys)))))
+  (testing "key creation/retrieval is atomic"             ; this isn't proof, just a best-effort check
+    (is (= 1 (count (into #{} (doall (pmap #(do %& (map base64-encode (get-crypto-keys)))
+                                           (range 100)))))))))

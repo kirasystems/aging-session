@@ -10,17 +10,23 @@ no way to get rid of sessions that are no longer being visited.
 Depending on how long running a server is and on how big its sessions are, 
 the unallocated sessions can potentially accumulate more and more memory.
 Another possible scenario is a denial of service attack where the attacker
-continually asks for new sessions thus exhusting the server of memory.
+continually asks for new sessions thus exhausting the server of memory.
 
 This session store has a sweeper thread that will apply a set of functions
 to every session object after every X requests are made. These functions
 are also applied to every session when it is read.
 
+## MAJOR CHANGES IN 0.5.0
+
+- Cookies are now issued as signed tokens. 
+- Read/Write session interface changed to accommodate new cookie style.
+- Cookies cannot stay valid for longer than 72hours, regardless of expiry policy
+
 ## Dependency
 
 To use aging-session, include the following dependency in your project.clj file.
 
-[![Clojars Project](http://clojars.org/kirasystems/aging-session/latest-version.svg)](http://clojars.org/kirasystems/aging-session)
+[![Clojars Project](https://clojars.org/kirasystems/aging-session/latest-version.svg)](https://clojars.org/kirasystems/aging-session)
 
 ## Usage
 

@@ -1,4 +1,4 @@
-(defproject kirasystems/aging-session "0.3.6-SNAPSHOT"
+(defproject kirasystems/aging-session "0.5.0-SNAPSHOT"
   :description "Memory based ring session with expiry and time based mutation."
   :url "https://github.com/diligenceengine/aging-session"
   :license {:name "Eclipse Public License"
@@ -9,7 +9,14 @@
                               :username :env
                               :password :env}]]
 
-  :dependencies [[ring/ring-core "1.7.1"]]
+  :dependencies [[ring/ring-core "1.7.1"]
+                 [buddy/buddy-auth "2.2.0"]
+                 [buddy/buddy-core "1.6.0"]
+                 [buddy/buddy-sign "3.1.0"]
+                 [buddy/buddy-hashers "1.4.0"]
+                 [commons-codec "1.13"]
+                 [com.taoensso/nippy "2.14.0"]
+                 [org.clojure/tools.logging "0.5.0"]]
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.9.0"]]}}
 
   :release-tasks [["vcs" "assert-committed"]
