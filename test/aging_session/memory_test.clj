@@ -12,7 +12,9 @@
     (testing "Session with corrupt IV is empty"
       (is (= (read-session as (str "badpre" (subs cookie 6))) {})))
     (testing "Session with corrupt MAC is empty"
-      )))
+      (is (= (read-session as (str (subs cookie 0 (- (count cookie) 6)) "badsuf")) {})))
+    (testing "Session with corrupt payload is empty"
+      (is (= (read-session as (str (subs cookie 0 40) "badpay" (subs cookie 46))) {})))))
 
 (deftest basic-write
   (testing "Test session writes and reads."
@@ -68,4 +70,12 @@
     (is (= 2 (count (get-crypto-keys)))))
   (testing "key creation/retrieval is atomic"             ; this isn't proof, just a best-effort check
     (is (= 1 (count (into #{} (doall (pmap #(do %& (map base64-encode (get-crypto-keys)))
-                                           (range 100)))))))))
+                                           (range 100))))))))
+  (testing "encryption roundtrip"
+    (let [data {:some :data}
+          key (first (get-crypto-keys))
+          [iv enc-data] (encrypt key data)]
+      (is (= data (decrypt iv key enc-data)))))
+  (testing "cookie roundtrip"
+    (let [id 1234567]
+      (is (= id (:id (verify-and-decrypt-cookie (encrypt-and-hmac-cookie id))))))))
