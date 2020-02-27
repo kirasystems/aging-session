@@ -1,6 +1,6 @@
 (ns aging-session.memory
   "In-memory session storage with mortality."
-  (:require [aging-session.crypto :as crypto]
+  (:require [aging-session.cookie :as cookie]
             [ring.middleware.session.store :refer :all]
             [ring.util.codec :refer [url-encode url-decode]]))
 
@@ -55,16 +55,16 @@
 
   SessionStore
   (read-session [_ cookie]
-    (let [key (:id (crypto/verify-and-decrypt-cookie cookie))]
+    (let [key (:id (cookie/verify-and-decrypt-cookie cookie))]
       (swap! session-map sweep-entry event-fns key)
       (when (and refresh-on-read (contains? @session-map key))
         (swap! session-map assoc-in [key :timestamp] (now)))
       (get-in @session-map [key :value] {})))
 
   (write-session [_ cookie {:keys [bump-session?] :as data}]
-    (let [decrypted-cookie (crypto/verify-and-decrypt-cookie cookie)
+    (let [decrypted-cookie (cookie/verify-and-decrypt-cookie cookie)
           key (or (:id decrypted-cookie)
-                  (:counter (crypto/next-session!)))
+                  (:counter (cookie/next-session!)))
           session (cond-> data
                     bump-session? (assoc :last-access (System/currentTimeMillis))
                     true (dissoc :bump-session?))]
@@ -74,7 +74,7 @@
         (swap! session-map write-entry key session))
       (if decrypted-cookie
         cookie
-        (crypto/encrypt-and-hmac-cookie key))))
+        (cookie/encrypt-and-hmac-cookie key))))
 
   (delete-session [_ key]
     (swap! session-map dissoc key)

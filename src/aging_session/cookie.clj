@@ -1,4 +1,4 @@
-(ns aging-session.crypto
+(ns aging-session.cookie
   (:require [buddy.core.crypto :as crypto]
             [buddy.core.mac :as mac]
             [buddy.core.nonce :as nonce]
