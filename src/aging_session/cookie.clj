@@ -95,6 +95,6 @@
         [enc-key mac-key] (get-crypto-keys)
         cookie (some->> hmac
                         (verify-and-return-data iv enc-cookie mac-key)
-                        (#(decrypt (base64-decode iv) (base64-decode %) enc-key))
-                        not-expired?)]
-    cookie))
+                        (#(decrypt (base64-decode iv) (base64-decode %) enc-key)))]
+    (when (not-expired? cookie)
+      cookie)))
