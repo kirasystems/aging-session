@@ -55,26 +55,26 @@
 
   SessionStore
   (read-session [_ cookie]
-    (let [key (:id (cookie/verify-and-decrypt-cookie cookie))]
+    (let [key (cookie/get-id cookie)]
       (swap! session-map sweep-entry event-fns key)
       (when (and refresh-on-read (contains? @session-map key))
         (swap! session-map assoc-in [key :timestamp] (now)))
       (get-in @session-map [key :value] {})))
 
   (write-session [_ cookie {:keys [bump-session?] :as data}]
-    (let [decrypted-cookie (cookie/verify-and-decrypt-cookie cookie)
-          key (or (:id decrypted-cookie)
-                  (:counter (cookie/next-session!)))
+    (let [session-id (cookie/get-id cookie)
+          return-id (or session-id
+                        (cookie/next-session!))
           session (cond-> data
                     bump-session? (assoc :last-access (System/currentTimeMillis))
                     true (dissoc :bump-session?))]
       (swap! req-count inc)	  ; Increase the request count
       (if refresh-on-write    ; Write key and and update timestamp.
-        (swap! session-map assoc key (new-entry session))
-        (swap! session-map write-entry key session))
-      (if decrypted-cookie
+        (swap! session-map assoc return-id (new-entry session))
+        (swap! session-map write-entry return-id session))
+      (if session-id
         cookie
-        (cookie/encrypt-and-hmac-cookie key))))
+        (cookie/bake-cookie return-id))))
 
   (delete-session [_ key]
     (swap! session-map dissoc key)

@@ -28,7 +28,7 @@
 
 (defn next-session!
   []
-  (swap! internals-atom update-in [:counter] inc))
+  (:counter (swap! internals-atom update-in [:counter] inc)))
 
 (defn get-crypto-keys
   []
@@ -60,7 +60,7 @@
       (log/error "Error decrypting cookie: " e)
       nil)))
 
-(defn encrypt-and-hmac-cookie
+(defn bake-cookie
   [session-id]
   (let [[enc-key mac-key] (get-crypto-keys)
         iat (time/now)
@@ -86,7 +86,7 @@
                   iat)
     false))
 
-(defn verify-and-decrypt-cookie
+(defn get-id
   [url-cookie]
   (let [[iv enc-cookie hmac] (some-> url-cookie
                                      url-decode
@@ -97,4 +97,4 @@
                         (verify-and-return-data iv enc-cookie mac-key)
                         (#(decrypt (base64-decode iv) (base64-decode %) enc-key)))]
     (when (not-expired? cookie)
-      cookie)))
+      (:id cookie))))

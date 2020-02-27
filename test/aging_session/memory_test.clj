@@ -30,14 +30,14 @@
     (let [as (aging-memory-store)
           cookie (write-session as "invalid-key" {:a 1})]
       (is (= 1 (:a (read-session as cookie))))
-      (delete-session as (:id (verify-and-decrypt-cookie cookie)))
+      (delete-session as (get-id cookie))
       (is (= (read-session as cookie) {})))))
 
 (deftest timestamp-on-creation
   (testing "Test the behaviour where each entry's timestamp is set only on session creation."
     (let [as (aging-memory-store)
           cookie (write-session as "invalid-key" {:a 1})
-          id (:id (verify-and-decrypt-cookie cookie))]
+          id (get-id cookie)]
       (let [ts1 (read-timestamp as id)]
         (is (integer? ts1))
         (write-session as cookie {:foo 2})
@@ -48,7 +48,7 @@
   (testing "Test the behaviour where each entry's timestamp is refreshed on write."
     (let [as (aging-memory-store :refresh-on-write true)
           cookie (write-session as "invalid-key" {:a 1})
-          id (:id (verify-and-decrypt-cookie cookie))]
+          id (get-id cookie)]
       (let [ts1 (read-timestamp as id)]
         (. Thread (sleep 10))
         (write-session as cookie {:foo 2})
@@ -59,7 +59,7 @@
   (testing "Test the behaviour where each entry's timestamp is refreshed on read."
     (let [as (aging-memory-store :refresh-on-read true)
           cookie (write-session as "invalid-key" {:a 1})
-          id (:id (verify-and-decrypt-cookie cookie))]
+          id (get-id cookie)]
       (let [ts1 (read-timestamp as id)]
         (. Thread (sleep 10))
         (is (= (read-session as cookie) {:a 1}))
@@ -79,4 +79,4 @@
       (is (= data (decrypt iv enc-data key)))))
   (testing "cookie roundtrip"
     (let [id 1234567]
-      (is (= id (:id (verify-and-decrypt-cookie (encrypt-and-hmac-cookie id))))))))
+      (is (= id (get-id (bake-cookie id)))))))

@@ -10,7 +10,7 @@
   (testing "Test session expiry."
     (let [as (aging-memory-store :events [(event/expires-after 1)])
           cookie (write-session as "invalid-key" {:a 1})
-          id (:id (verify-and-decrypt-cookie cookie))]
+          id (get-id cookie)]
       (. Thread (sleep 1500))
       (is (= (read-session as cookie) {})))))
 
@@ -21,7 +21,7 @@
                :sweep-every 5
                :sweep-delay 1000)
           cookie (write-session as "invalid-key" {:a 1})
-          id (:id (verify-and-decrypt-cookie cookie))]
+          id (get-id cookie)]
       (. Thread (sleep 1500))
       ; key should still exist, even though it's expired
       (is (not (nil? (read-timestamp as id))))
