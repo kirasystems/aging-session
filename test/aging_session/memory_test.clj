@@ -2,7 +2,8 @@
   (:require
     [clojure.test :refer :all]
     [ring.middleware.session.store :refer :all]
-    [aging-session.memory :refer :all]))
+    [aging-session.memory :refer :all]
+    [aging-session.crypto :refer :all]))
 
 (deftest basic-read-empty
   (let [as (aging-memory-store)
@@ -75,7 +76,7 @@
     (let [data {:some :data}
           key (first (get-crypto-keys))
           [iv enc-data] (encrypt key data)]
-      (is (= data (decrypt iv key enc-data)))))
+      (is (= data (decrypt iv enc-data key)))))
   (testing "cookie roundtrip"
     (let [id 1234567]
       (is (= id (:id (verify-and-decrypt-cookie (encrypt-and-hmac-cookie id))))))))

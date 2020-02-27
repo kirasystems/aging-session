@@ -3,7 +3,8 @@
     [aging-session.event :as event]
     [clojure.test :refer :all]
     [ring.middleware.session.store :refer :all]
-    [aging-session.memory :refer :all]))
+    [aging-session.memory :refer :all]
+    [aging-session.crypto :refer :all]))
 
 (deftest session-expiry
   (testing "Test session expiry."

@@ -14,6 +14,7 @@
                  [buddy/buddy-core "1.6.0"]
                  [buddy/buddy-sign "3.1.0"]
                  [buddy/buddy-hashers "1.4.0"]
+                 [clj-time "0.15.2"]
                  [commons-codec "1.13"]
                  [com.taoensso/nippy "2.14.0"]
                  [org.clojure/tools.logging "0.5.0"]]
