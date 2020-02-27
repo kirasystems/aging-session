@@ -73,10 +73,9 @@
             url-encode)))
 
 (defn- verify-and-return-data
-  [iv data hmac key]
-  (and hmac
-       (mac/verify (str iv data) (base64-decode hmac) {:key key :alg :hmac+sha512})
-       data))
+  [iv data key hmac]
+  (when (mac/verify (str iv data) (base64-decode hmac) {:key key :alg :hmac+sha512})
+    data))
 
 (defn- not-expired?
   [{iat :iat}]
@@ -94,8 +93,8 @@
                                      (or "")
                                      (string/split #"\." 3))
         [enc-key mac-key] (get-crypto-keys)
-        enc-data (verify-and-return-data iv enc-cookie hmac mac-key)
-        cookie (when enc-data
-                 (decrypt (base64-decode iv) (base64-decode enc-data) enc-key))]
-    (when (not-expired? cookie)
-      cookie)))
+        cookie (some->> hmac
+                        (verify-and-return-data iv enc-cookie mac-key)
+                        (#(decrypt (base64-decode iv) (base64-decode %) enc-key))
+                        not-expired?)]
+    cookie))
