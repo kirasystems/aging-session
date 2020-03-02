@@ -9,13 +9,7 @@
   (let [as (aging-memory-store)
         cookie (write-session as nil {:some :thing})]
     (testing "Invalid session is empty."
-      (is (= (read-session as "invalid-cookie") {})))
-    (testing "Session with corrupt IV is empty"
-      (is (= (read-session as (str "badpre" (subs cookie 6))) {})))
-    (testing "Session with corrupt MAC is empty"
-      (is (= (read-session as (str (subs cookie 0 (- (count cookie) 6)) "badsuf")) {})))
-    (testing "Session with corrupt payload is empty"
-      (is (= (read-session as (str (subs cookie 0 40) "badpay" (subs cookie 46))) {})))))
+      (is (= (read-session as "invalid-cookie") {})))))
 
 (deftest basic-write
   (testing "Test session writes and reads."
