@@ -1,7 +1,8 @@
 (ns aging-session.memory
   "In-memory session storage with mortality."
-  (:require [ring.middleware.session.store :refer :all])
-  (:import java.util.UUID))
+  (:require [aging-session.cookie :as cookie]
+            [ring.middleware.session.store :refer :all]
+            [ring.util.codec :refer [url-encode url-decode]]))
 
 (defrecord SessionEntry [timestamp value])
 
@@ -53,22 +54,27 @@
     (get-in @session-map [key :timestamp]))
 
   SessionStore
-  (read-session [_ key]
-    (swap! session-map sweep-entry event-fns key)
-    (when (and refresh-on-read (contains? @session-map key))
-      (swap! session-map assoc-in [key :timestamp] (now)))
-    (get-in @session-map [key :value] {}))
+  (read-session [_ cookie]
+    (let [key (cookie/get-id cookie)]
+      (swap! session-map sweep-entry event-fns key)
+      (when (and refresh-on-read (contains? @session-map key))
+        (swap! session-map assoc-in [key :timestamp] (now)))
+      (get-in @session-map [key :value] {})))
 
-  (write-session [_ key {:keys [bump-session?] :as data}]
-    (let [key (or key (str (UUID/randomUUID)))
+  (write-session [_ cookie {:keys [bump-session?] :as data}]
+    (let [session-id (cookie/get-id cookie)
+          return-id (or session-id
+                        (cookie/next-session!))
           session (cond-> data
                     bump-session? (assoc :last-access (System/currentTimeMillis))
                     true (dissoc :bump-session?))]
       (swap! req-count inc)	  ; Increase the request count
       (if refresh-on-write    ; Write key and and update timestamp.
-        (swap! session-map assoc key (new-entry session))
-        (swap! session-map write-entry key session))
-      key))
+        (swap! session-map assoc return-id (new-entry session))
+        (swap! session-map write-entry return-id session))
+      (if session-id
+        cookie
+        (cookie/bake-cookie return-id))))
 
   (delete-session [_ key]
     (swap! session-map dissoc key)
