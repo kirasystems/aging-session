@@ -6,8 +6,8 @@
 
   :repositories [["releases" {:url "https://clojars.org/repo"
                               :sign-releases false
-                              :username :env
-                              :password :env}]]
+                              :username :env/clojars_username
+                              :password :env/clojars_password}]]
 
   :dependencies [[ring/ring-core "1.7.1"]
                  [buddy/buddy-auth "2.2.0"]
